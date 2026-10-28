@@ -7,11 +7,9 @@
         <div class="row py-5">
             <!-- Logo Section -->
             <div class="col-lg-3 col-md-6 col-12 mb-4">
-                <?php
-                if (function_exists('the_custom_logo')) {
-                    the_custom_logo();
-                }
-                ?>
+            <a href="<?php echo esc_url(home_url('/')); ?>" rel="home">
+    <img src="http://mycentralheating.co.uk/wp-content/uploads/2025/07/awo_logo-png.avif" alt="<?php echo esc_attr(get_bloginfo('name')); ?>" class="header-nav-logo">
+  </a>
             </div>
             
             <!-- Main Menu Navigation -->
