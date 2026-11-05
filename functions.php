@@ -87,6 +87,42 @@ function insert_meta_description() {
 }
 add_action('wp_head', 'insert_meta_description');
 
+// Unlisted pages: reachable only by direct link (e.g. a page linked from a customer SMS). A page with
+// the mch_unlisted meta set gets noindex and is left out of wp-sitemap.xml. There's no SEO plugin
+// active to do this per page. Set it over the REST API with {"meta": {"mch_unlisted": true}}.
+function mch_register_unlisted_meta() {
+    register_post_meta('page', 'mch_unlisted', array(
+        'type'          => 'boolean',
+        'single'        => true,
+        'default'       => false,
+        'show_in_rest'  => true,
+        'auth_callback' => function () {
+            return current_user_can('edit_pages');
+        },
+    ));
+}
+add_action('init', 'mch_register_unlisted_meta');
+
+function mch_unlisted_noindex($robots) {
+    if (is_page() && get_post_meta(get_queried_object_id(), 'mch_unlisted', true)) {
+        $robots['noindex'] = true;
+    }
+    return $robots;
+}
+add_filter('wp_robots', 'mch_unlisted_noindex');
+
+function mch_unlisted_out_of_sitemap($args, $post_type) {
+    if ('page' === $post_type) {
+        $args['meta_query'] = array(
+            'relation' => 'OR',
+            array('key' => 'mch_unlisted', 'compare' => 'NOT EXISTS'),
+            array('key' => 'mch_unlisted', 'value' => '1', 'compare' => '!='),
+        );
+    }
+    return $args;
+}
+add_filter('wp_sitemaps_posts_query_args', 'mch_unlisted_out_of_sitemap', 10, 2);
+
 
 
 // Add custom logo support
